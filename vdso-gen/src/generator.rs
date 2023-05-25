@@ -111,6 +111,8 @@ pub(crate) fn generate_versions_parser(m_vs: &Vec<Box<str>>, o_vs: &Vec<Box<str>
                 .or_default()
                 .extend(generate_branch_o(ver, i));
         }
+        let mut branches = branches.into_iter().collect::<Vec<(_, _)>>();
+        branches.sort_by(|a, b| a.0.cmp(&b.0));
 
         let mut tokens = TokenStream::new();
         for (hash, branches) in branches {
@@ -232,6 +234,9 @@ fn generate_symbols_parser(
                 .or_default()
                 .extend(generate_branch_o(id, name, ver));
         }
+
+        let mut branches = branches.into_iter().collect::<Vec<(_, _)>>();
+        branches.sort_by(|a, b| a.0.cmp(&b.0));
 
         let mut tokens = TokenStream::new();
         for (hash, branches) in branches {

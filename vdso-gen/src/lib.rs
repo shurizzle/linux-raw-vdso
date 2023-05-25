@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 
-use proc_macro::TokenStream;
-use proc_macro2::{Delimiter, Group, Ident, Span};
+use proc_macro2::{Delimiter, Group, Ident, Span, TokenStream};
 use quote::{quote, ToTokens, TokenStreamExt};
 
 extern crate proc_macro;
@@ -9,6 +8,7 @@ extern crate proc_macro2;
 extern crate quote;
 extern crate syn;
 
+pub mod format;
 mod generator;
 mod parser;
 
@@ -19,20 +19,20 @@ pub(crate) enum Ver {
     None,
 }
 
-#[proc_macro]
 pub fn vdso(item: TokenStream) -> TokenStream {
     match inner(item) {
         Ok(toks) => toks,
-        Err(err) => err.into_compile_error().into(),
+        Err(err) => err.into_compile_error(),
     }
 }
 
 fn inner(item: TokenStream) -> Result<TokenStream, syn::Error> {
     let (((m_vers, o_vers), (m_fns, o_fns)), mut ts, name) = {
-        let s: parser::VdsoStruct = syn::parse(item)?;
+        let s: parser::VdsoStruct = syn::parse2(item)?;
         let i = extract_infos(&s)?;
         let name = s.name.clone();
-        let ts = s.into_token_stream();
+        let mut ts = quote!(#![allow(clippy::single_match)]);
+        s.to_tokens(&mut ts);
         (i, ts, name)
     };
 
@@ -48,7 +48,7 @@ fn inner(item: TokenStream) -> Result<TokenStream, syn::Error> {
         tokens
     }));
 
-    Ok(ts.into())
+    Ok(ts)
 }
 
 #[allow(clippy::type_complexity)]

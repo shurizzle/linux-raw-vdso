@@ -1,5 +1,5 @@
 [workspace]
-members = ["macros"]
+exclude = ["vdso-gen"]
 
 [package]
 name = "linux-vdso-raw"
@@ -14,4 +14,3 @@ goblin = { version = "0.6.1", default-features = false, features = [
   "elf32",
   "elf64",
 ] }
-linux-vdso-macros = { path = "macros" }
