@@ -40,9 +40,36 @@ impl Vdso {
 
 pub(crate) mod util;
 
+mod elf_common {
+    #[cfg(target_endian = "little")]
+    pub use goblin::elf::header::ELFDATA2LSB as ELFDATA;
+    #[cfg(target_endian = "big")]
+    pub use goblin::elf::header::ELFDATA2MSB as ELFDATA;
+
+    #[cfg(target_arch = "x86")]
+    pub use goblin::elf::header::EM_386 as EM_CURRENT;
+    #[cfg(target_arch = "aarch64")]
+    pub use goblin::elf::header::EM_AARCH64 as EM_CURRENT;
+    #[cfg(target_arch = "arm")]
+    pub use goblin::elf::header::EM_ARM as EM_CURRENT;
+    #[cfg(any(target_arch = "mips", target_arch = "mips64"))]
+    pub use goblin::elf::header::EM_MIPS as EM_CURRENT;
+    #[cfg(target_arch = "powerpc")]
+    pub use goblin::elf::header::EM_PPC as EM_CURRENT;
+    #[cfg(target_arch = "powerpc64")]
+    pub use goblin::elf::header::EM_PPC64 as EM_CURRENT;
+    #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+    pub use goblin::elf::header::EM_RISCV as EM_CURRENT;
+    #[cfg(target_arch = "s390x")]
+    pub use goblin::elf::header::EM_S390 as EM_CURRENT;
+    #[cfg(target_arch = "x86_64")]
+    pub use goblin::elf::header::EM_X86_64 as EM_CURRENT;
+}
+
 #[cfg(target_pointer_width = "64")]
 mod elf {
     pub use goblin::elf64::dynamic::*;
+    pub use goblin::elf64::header::*;
     pub use goblin::elf64::header::*;
     pub use goblin::elf64::program_header::*;
     pub use goblin::elf64::section_header::*;
@@ -50,11 +77,14 @@ mod elf {
 
     pub const CLASS: u8 = ELFCLASS64;
     pub type Word = u64;
+
+    pub use super::elf_common::*;
 }
 
 #[cfg(target_pointer_width = "32")]
 mod elf {
     pub use goblin::elf32::dynamic::*;
+    pub use goblin::elf32::header::*;
     pub use goblin::elf32::header::*;
     pub use goblin::elf32::program_header::*;
     pub use goblin::elf32::section_header::*;
@@ -62,6 +92,8 @@ mod elf {
 
     pub const CLASS: u8 = ELFCLASS32;
     pub type Word = u32;
+
+    pub use super::elf_common::*;
 }
 
 use core::{marker::PhantomData, ptr};
@@ -325,15 +357,64 @@ impl VdsoHeader {
     pub(crate) unsafe fn from_ptr<'a>(ptr: *const core::ffi::c_void) -> Option<&'a Self> {
         let head = &*(ptr as *const Self);
 
+        // Test magic number
         if head.0.e_ident[..elf::ELFMAG.len()] != elf::ELFMAG[..] {
             return None;
         }
 
+        // Test class
         if head.0.e_ident[elf::EI_CLASS] != elf::CLASS {
             return None;
         }
 
-        // TODO: more checks
+        // Test OS ABI
+        if !matches!(
+            head.0.e_ident[elf::EI_OSABI],
+            elf::ELFOSABI_SYSV | elf::ELFOSABI_LINUX
+        ) {
+            return None;
+        }
+
+        // Test ABI version
+        if head.0.e_ident[elf::EI_ABIVERSION] != 0 {
+            return None;
+        }
+
+        // Test elf type, it must be dynamic
+        if head.0.e_type != elf::ET_DYN {
+            return None;
+        }
+
+        // Test elf version
+        if head.0.e_ident[elf::EI_VERSION] != elf::EV_CURRENT {
+            return None;
+        }
+
+        // Test some sizes
+        if head.0.e_ehsize as usize != core::mem::size_of::<elf::Header>()
+            || head.0.e_phentsize as usize != core::mem::size_of::<elf::ProgramHeader>()
+        {
+            dbg!("SIZES");
+            return None;
+        }
+
+        if head.0.e_phnum == u16::MAX {
+            return None;
+        }
+
+        if (head.0.e_phoff as usize) < core::mem::size_of::<elf::Header>() {
+            return None;
+        }
+
+        // Test endianness
+        if head.0.e_ident[elf::EI_DATA] != elf::ELFDATA {
+            return None;
+        }
+
+        // Test arch
+        if head.0.e_machine != elf::EM_CURRENT {
+            return None;
+        }
 
         Some(head)
     }
