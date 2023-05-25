@@ -1,44 +1,22 @@
-#[cfg(target_arch = "arm")]
-#[path = "../arch/arm.rs"]
-mod arch;
-#[cfg(target_arch = "aarch64")]
-#[path = "../arch/aarch64.rs"]
-mod arch;
-#[cfg(any(target_arch = "mips", target_arch = "mips64"))]
-#[path = "../arch/mips.rs"]
-mod arch;
-#[cfg(target_arch = "powerpc")]
-#[path = "../arch/powerpc.rs"]
-mod arch;
-#[cfg(target_arch = "powerpc64")]
-#[path = "../arch/powerpc64.rs"]
-mod arch;
-#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-#[path = "../arch/riscv.rs"]
-mod arch;
-#[cfg(target_arch = "s390x")]
-#[path = "../arch/s390x.rs"]
-mod arch;
-#[cfg(target_arch = "x86")]
-#[path = "../arch/x86.rs"]
-mod arch;
-#[cfg(target_arch = "x86_64")]
-#[path = "../arch/x86_64.rs"]
+#![allow(dead_code)]
+
+#[cfg_attr(target_arch = "arm", path = "../arch/arm.rs")]
+#[cfg_attr(target_arch = "aarch64", path = "../arch/aarch64.rs")]
+#[cfg_attr(
+    any(target_arch = "mips", target_arch = "mips64"),
+    path = "../arch/mips.rs"
+)]
+#[cfg_attr(target_arch = "powerpc", path = "../arch/powerpc.rs")]
+#[cfg_attr(target_arch = "powerpc64", path = "../arch/powerpc64.rs")]
+#[cfg_attr(
+    any(target_arch = "riscv32", target_arch = "riscv64"),
+    path = "../arch/riscv.rs"
+)]
+#[cfg_attr(target_arch = "s390x", path = "../arch/s390x.rs")]
+#[cfg_attr(target_arch = "x86", path = "../arch/x86.rs")]
+#[cfg_attr(target_arch = "x86_64", path = "../arch/x86_64.rs")]
 mod arch;
 
-#[cfg(any(
-    target_arch = "arm",
-    target_arch = "aarch64",
-    target_arch = "x86",
-    target_arch = "x86_64",
-    target_arch = "mips",
-    target_arch = "mips64",
-    target_arch = "powerpc",
-    target_arch = "powerpc64",
-    target_arch = "riscv32",
-    target_arch = "riscv64",
-    target_arch = "s390x",
-))]
 pub use arch::*;
 
 #[cfg(any(
@@ -385,22 +363,7 @@ impl VdsoHeader {
     }
 }
 
-#[cfg(all(
-    test,
-    any(
-        target_arch = "arm",
-        target_arch = "aarch64",
-        target_arch = "x86",
-        target_arch = "x86_64",
-        target_arch = "mips",
-        target_arch = "mips64",
-        target_arch = "powerpc",
-        target_arch = "powerpc64",
-        target_arch = "riscv32",
-        target_arch = "riscv64",
-        target_arch = "s390x",
-    )
-))]
+#[cfg(test)]
 mod tests {
     use linux_auxv::*;
 
