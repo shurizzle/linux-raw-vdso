@@ -1,0 +1,17 @@
+[workspace]
+members = ["macros"]
+
+[package]
+name = "linux-vdso-raw"
+version = "0.0.1"
+edition = "2018"
+
+[dev-dependencies]
+linux-auxv = { git = "https://www.github.com/shurizzle/linux-auxv" }
+
+[dependencies]
+goblin = { version = "0.6.1", default-features = false, features = [
+  "elf32",
+  "elf64",
+] }
+linux-vdso-macros = { path = "macros" }
