@@ -1,5 +1,9 @@
 use std::collections::HashSet;
 
+use color_eyre::{
+    eyre::{bail, Context},
+    Result,
+};
 use proc_macro2::{Delimiter, Group, Ident, Span, TokenStream};
 use quote::{quote, ToTokens, TokenStreamExt};
 
@@ -19,16 +23,9 @@ pub(crate) enum Ver {
     None,
 }
 
-pub fn vdso(item: TokenStream) -> TokenStream {
-    match inner(item) {
-        Ok(toks) => toks,
-        Err(err) => err.into_compile_error(),
-    }
-}
-
-fn inner(item: TokenStream) -> Result<TokenStream, syn::Error> {
+pub fn vdso(item: TokenStream) -> Result<TokenStream> {
     let (((m_vers, o_vers), (m_fns, o_fns)), mut ts, name) = {
-        let s: parser::VdsoStruct = syn::parse2(item)?;
+        let s: parser::VdsoStruct = syn::parse2(item).wrap_err("Not a valid vdso struct")?;
         let i = extract_infos(&s)?;
         let name = s.name.clone();
         let mut ts = quote!(#![allow(clippy::single_match)]);
@@ -54,16 +51,13 @@ fn inner(item: TokenStream) -> Result<TokenStream, syn::Error> {
 #[allow(clippy::type_complexity)]
 fn extract_infos(
     s: &parser::VdsoStruct,
-) -> Result<
+) -> Result<(
+    (Vec<Box<str>>, Vec<Box<str>>),
     (
-        (Vec<Box<str>>, Vec<Box<str>>),
-        (
-            Vec<(Box<str>, Box<str>, Ver)>,
-            Vec<(Box<str>, Box<str>, Ver)>,
-        ),
+        Vec<(Box<str>, Box<str>, Ver)>,
+        Vec<(Box<str>, Box<str>, Ver)>,
     ),
-    syn::Error,
-> {
+)> {
     let mut m_vers = vec![];
     let mut o_vers = vec![];
     for f in &s.fields {
@@ -97,14 +91,14 @@ fn extract_infos(
     for f in &s.fields {
         let ident = f.ident.to_string().into_boxed_str();
         if ident_set.contains(&ident) {
-            return Err(syn::Error::new(f.ident.span(), "Repeated field"));
+            bail!("Repeated field {}", ident);
         } else {
             ident_set.insert(ident.clone());
         }
 
         let name = f.name.to_string().into_boxed_str();
         if name_set.contains(&name) {
-            return Err(syn::Error::new(f.name.span(), "Repeated vDSO function"));
+            bail!("Repeated vDSO function {}", name);
         } else {
             name_set.insert(name.clone());
         }

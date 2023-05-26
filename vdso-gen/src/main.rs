@@ -6,29 +6,35 @@ use std::{
     path::PathBuf,
 };
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+use color_eyre::{
+    eyre::{bail, Context},
+    Result,
+};
+
+fn main() -> Result<()> {
+    color_eyre::install()?;
+
     let dir = {
         let mut args = std::env::args_os();
 
         if args.len() != 2 {
-            eprintln!("Directory not present");
-            std::process::exit(1);
+            bail!("Directory not present");
         }
         _ = args.next().unwrap();
         args.next().unwrap()
     };
 
-    let formatter = vdso_gen::format::Formatter::new();
+    let formatter = vdso_gen::format::Formatter::new()?;
 
     let base = PathBuf::from(dir);
     let mut def_dir = base.clone();
     def_dir.push("defs");
 
-    for entry in std::fs::read_dir(def_dir)? {
-        let entry = entry?;
+    for entry in std::fs::read_dir(def_dir).wrap_err("Cannot read definitions directory")? {
+        let entry = entry.wrap_err("Cannot read definition file")?;
 
         {
-            let md = entry.metadata()?;
+            let md = entry.metadata().wrap_err("Cannot read definition file")?;
             if md.is_symlink() || !md.is_file() {
                 continue;
             }
@@ -38,22 +44,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let tokens = {
             let mut content = String::new();
             {
-                File::open(&path)?.read_to_string(&mut content)?;
+                File::open(&path)
+                    .wrap_err("Cannot read definition file")?
+                    .read_to_string(&mut content)
+                    .wrap_err("Cannot read definition file")?;
             }
-            content.parse::<proc_macro2::TokenStream>()?
+            match content.parse::<proc_macro2::TokenStream>() {
+                Ok(ts) => ts,
+                Err(err) => {
+                    bail!("{}: {}", path.display(), err);
+                }
+            }
         };
         {
-            let gen = vdso_gen::vdso(tokens).to_string();
-            let gen = formatter.format(gen);
+            let gen = vdso_gen::vdso(tokens)?;
+            let gen = formatter.format(gen)?;
 
             let mut dest = base.clone();
             dest.push("src");
             dest.push("arch");
-            dest.push(path.file_name().unwrap());
+            dest.push(path.file_name().expect("unreachable"));
 
             {
-                let mut dest = File::create(dest)?;
-                dest.write_all(gen.as_bytes())?;
+                let mut dest = File::create(dest).wrap_err("Failed to write generated file")?;
+                dest.write_all(gen.as_bytes())
+                    .wrap_err("Failed to write generated file")?;
             }
         }
     }
