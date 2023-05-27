@@ -2,7 +2,7 @@
 exclude = ["vdso-gen"]
 
 [package]
-name = "linux-vdso-raw"
+name = "linux-raw-vdso"
 version = "0.0.1"
 edition = "2018"
 
