@@ -394,7 +394,6 @@ impl VdsoHeader {
         if head.0.e_ehsize as usize != core::mem::size_of::<elf::Header>()
             || head.0.e_phentsize as usize != core::mem::size_of::<elf::ProgramHeader>()
         {
-            dbg!("SIZES");
             return None;
         }
 
