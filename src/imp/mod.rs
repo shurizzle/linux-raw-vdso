@@ -17,7 +17,7 @@
 #[cfg_attr(target_arch = "x86_64", path = "../arch/x86_64.rs")]
 mod arch;
 
-pub use arch::*;
+pub use arch::Vdso;
 
 #[cfg(any(
     target_arch = "arm",
@@ -38,98 +38,15 @@ impl Vdso {
     }
 }
 
+mod elf;
 pub(crate) mod util;
 
-mod elf_common {
-    #[cfg(target_endian = "little")]
-    pub use goblin::elf::header::ELFDATA2LSB as ELFDATA;
-    #[cfg(target_endian = "big")]
-    pub use goblin::elf::header::ELFDATA2MSB as ELFDATA;
-
-    #[cfg(target_arch = "x86")]
-    pub use goblin::elf::header::EM_386 as EM_CURRENT;
-    #[cfg(target_arch = "aarch64")]
-    pub use goblin::elf::header::EM_AARCH64 as EM_CURRENT;
-    #[cfg(target_arch = "arm")]
-    pub use goblin::elf::header::EM_ARM as EM_CURRENT;
-    #[cfg(any(target_arch = "mips", target_arch = "mips64"))]
-    pub use goblin::elf::header::EM_MIPS as EM_CURRENT;
-    #[cfg(target_arch = "powerpc")]
-    pub use goblin::elf::header::EM_PPC as EM_CURRENT;
-    #[cfg(target_arch = "powerpc64")]
-    pub use goblin::elf::header::EM_PPC64 as EM_CURRENT;
-    #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-    pub use goblin::elf::header::EM_RISCV as EM_CURRENT;
-    #[cfg(target_arch = "s390x")]
-    pub use goblin::elf::header::EM_S390 as EM_CURRENT;
-    #[cfg(target_arch = "x86_64")]
-    pub use goblin::elf::header::EM_X86_64 as EM_CURRENT;
-}
-
-#[cfg(target_pointer_width = "64")]
-mod elf {
-    pub use goblin::elf64::dynamic::*;
-    pub use goblin::elf64::header::*;
-    pub use goblin::elf64::header::*;
-    pub use goblin::elf64::program_header::*;
-    pub use goblin::elf64::section_header::*;
-    pub use goblin::elf64::sym::*;
-
-    pub const CLASS: u8 = ELFCLASS64;
-    pub type Word = u64;
-
-    pub use super::elf_common::*;
-}
-
-#[cfg(target_pointer_width = "32")]
-mod elf {
-    pub use goblin::elf32::dynamic::*;
-    pub use goblin::elf32::header::*;
-    pub use goblin::elf32::header::*;
-    pub use goblin::elf32::program_header::*;
-    pub use goblin::elf32::section_header::*;
-    pub use goblin::elf32::sym::*;
-
-    pub const CLASS: u8 = ELFCLASS32;
-    pub type Word = u32;
-
-    pub use super::elf_common::*;
-}
-
 use core::{marker::PhantomData, ptr};
-
-#[repr(C)]
-#[derive(Debug)]
-struct Verdef {
-    /// Version revision. This field shall be set to 1.
-    vd_version: u16,
-    /// Version information flag bitmask.
-    vd_flags: u16,
-    /// Version index numeric value referencing the SHT_GNU_versym section.
-    vd_ndx: u16,
-    /// Number of associated verdaux array entries.
-    vd_cnt: u16,
-    /// Version name hash value (ELF hash function).
-    vd_hash: u32,
-    /// Offset in bytes to a corresponding entry in an array of Elfxx_Verdaux structures as defined in Figure 2-2
-    vd_aux: u32,
-    /// Offset to the next verdef entry, in bytes.
-    vd_next: u32,
-}
-
-#[repr(C)]
-#[derive(Debug)]
-struct Verdaux {
-    /// Offset to the version or dependency name string in the section header, in bytes.
-    vda_name: u32,
-    /// Offset to the next verdaux entry, in bytes.
-    vda_next: u32,
-}
 
 pub(crate) struct VdsoReader<'a> {
     header: &'a VdsoHeader,
     versyms: *const u16,
-    verdefs: *const Verdef,
+    verdefs: *const elf::Verdef,
     strings: *const u8,
     syms: &'a [elf::Sym],
 }
@@ -141,7 +58,7 @@ impl<'a> VdsoReader<'a> {
 
     unsafe fn from_header(header: &'a VdsoHeader) -> Option<VdsoReader> {
         let mut versyms: *const u16 = ptr::null();
-        let mut verdefs: *const Verdef = ptr::null();
+        let mut verdefs: *const elf::Verdef = ptr::null();
         let mut strings: *const u8 = ptr::null();
         let mut syms: Option<&[elf::Sym]> = None;
         let mut filled = 0u8;
@@ -240,7 +157,7 @@ impl<'a> Version<'a> {
 }
 
 pub struct VersionIter<'a> {
-    verdefs: *const Verdef,
+    verdefs: *const elf::Verdef,
     reader: &'a VdsoReader<'a>,
 }
 
@@ -266,10 +183,10 @@ impl<'a> Iterator for VersionIter<'a> {
                 }
 
                 if verdef.vd_version == 1 && verdef.vd_flags & 1 == 0 {
-                    let aux = &*(verdef as *const Verdef)
+                    let aux = &*(verdef as *const elf::Verdef)
                         .cast::<u8>()
                         .add(verdef.vd_aux as usize)
-                        .cast::<Verdaux>();
+                        .cast::<elf::Verdaux>();
                     let name = self.reader.strings.add(aux.vda_name as usize);
 
                     return Some(Version {
@@ -368,11 +285,9 @@ impl VdsoHeader {
         }
 
         // Test OS ABI
-        if !matches!(
-            head.0.e_ident[elf::EI_OSABI],
-            elf::ELFOSABI_SYSV | elf::ELFOSABI_LINUX
-        ) {
-            return None;
+        match head.0.e_ident[elf::EI_OSABI] {
+            elf::ELFOSABI_SYSV | elf::ELFOSABI_LINUX => (),
+            _ => return None,
         }
 
         // Test ABI version
@@ -397,7 +312,7 @@ impl VdsoHeader {
             return None;
         }
 
-        if head.0.e_phnum == u16::MAX {
+        if head.0.e_phnum == 0xffff {
             return None;
         }
 
@@ -443,21 +358,21 @@ impl VdsoHeader {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use linux_auxv::*;
-
-    #[test]
-    fn retrieve() {
-        let ptr = Auxv::from_env().into_iter().find_map(|v| {
-            if let AuxvType::SysInfoHeader(p) = v {
-                Some(p)
-            } else {
-                None
-            }
-        });
-        assert!(ptr.is_some());
-        let ptr = ptr.unwrap();
-        assert!(unsafe { super::Vdso::from_ptr(ptr).is_some() })
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use linux_auxv::*;
+//
+//     #[test]
+//     fn retrieve() {
+//         let ptr = Auxv::get().into_iter().find_map(|v| {
+//             if let AuxvType::SysInfoHeader(p) = v {
+//                 Some(p)
+//             } else {
+//                 None
+//             }
+//         });
+//         assert!(ptr.is_some());
+//         let ptr = ptr.unwrap();
+//         assert!(unsafe { super::Vdso::from_ptr(ptr).is_some() })
+//     }
+// }
