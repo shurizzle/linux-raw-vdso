@@ -6,7 +6,35 @@ name = "linux-raw-vdso"
 version = "0.0.1"
 edition = "2018"
 
-# [dev-dependencies]
-# linux-auxv = { git = "https://www.github.com/shurizzle/linux-auxv" }
+[features]
+default = []
+
+aarch64 = []
+arm = []
+generic = []
+loongarch64 = []
+mips = []
+powerpc = []
+powerpc64 = []
+riscv = []
+s390x = []
+x32 = []
+x86 = []
+x86_64 = []
+
+all = [
+  "aarch64",
+  "arm",
+  "generic",
+  "loongarch64",
+  "mips",
+  "powerpc",
+  "powerpc64",
+  "riscv",
+  "s390x",
+  "x32",
+  "x86",
+  "x86_64",
+]
 
 [dependencies]

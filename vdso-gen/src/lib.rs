@@ -36,12 +36,17 @@ pub fn vdso(item: TokenStream) -> Result<TokenStream> {
     ts.append(Ident::new("impl", Span::call_site()));
     ts.append(name);
     ts.append(Group::new(Delimiter::Brace, {
-        let mut tokens = quote!(pub(crate) fn from_reader(reader: crate::VdsoReader) -> ::core::option::Option<Self>);
+        let mut tokens = quote!(fn from_reader(reader: crate::VdsoReader) -> ::core::option::Option<Self>);
         tokens.append(Group::new(Delimiter::Brace, {
             let mut tokens = quote!(unsafe);
             tokens.append(Group::new(Delimiter::Brace, generator::generate(&m_vers, &o_vers, &m_fns, &o_fns)));
             tokens
         }));
+        quote! {
+            pub unsafe fn from_ptr(ptr: *const ::core::ffi::c_void) -> ::core::option::Option<Self> {
+                Self::from_reader(crate::VdsoReader::from_ptr(ptr)?)
+            }
+        }.to_tokens(&mut tokens);
         tokens
     }));
 

@@ -12,7 +12,7 @@ pub struct Vdso {
     pub time: *const ::core::ffi::c_void,
 }
 impl Vdso {
-    pub(crate) fn from_reader(reader: crate::VdsoReader) -> ::core::option::Option<Self> {
+    fn from_reader(reader: crate::VdsoReader) -> ::core::option::Option<Self> {
         unsafe {
             let mut version_mandatory_0 = 0u16;
             let mut version_optional_0 = 0u16;
@@ -171,5 +171,8 @@ impl Vdso {
             }
             Some(vdso_inst)
         }
+    }
+    pub unsafe fn from_ptr(ptr: *const ::core::ffi::c_void) -> ::core::option::Option<Self> {
+        Self::from_reader(crate::VdsoReader::from_ptr(ptr)?)
     }
 }
