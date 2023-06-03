@@ -4,7 +4,6 @@ ADD /scripts/install.sh /install.sh
 ADD /docker/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /install.sh && \
-  chmod +x /test.sh && \
   env ENVFILE=/env.sh /install.sh && \
   rm -f /install.sh && \
   mkdir -p /project && \
@@ -16,4 +15,4 @@ RUN chmod +x /install.sh && \
 
 WORKDIR /project
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/test.sh"]
+CMD ["/bin/bash"]

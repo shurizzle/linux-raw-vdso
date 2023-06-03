@@ -31,8 +31,9 @@ apt-get update -y
 apt-get upgrade -y
 apt-get install -y build-essential wget qemu-user gcc-x86-64-linux-gnu \
 	gcc-i686-linux-gnu gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu \
-	gcc-riscv64-linux-gnu gcc-powerpc64-linux-gnu gcc-powerpc-linux-gnu \
-	gcc-mips-linux-gnu gcc-mips64-linux-gnuabi64 gcc-s390x-linux-gnu
+	gcc-riscv64-linux-gnu gcc-powerpc64-linux-gnu gcc-powerpc64le-linux-gnu \
+	gcc-powerpc-linux-gnu gcc-mips-linux-gnu gcc-mipsel-linux-gnu \
+	gcc-mips64el-linux-gnuabi64 gcc-mips64-linux-gnuabi64 gcc-s390x-linux-gnu
 
 if ! which rustup 2>/dev/null >/dev/null; then
 	RUSTUP_HOME="/opt/rust"
@@ -121,6 +122,13 @@ set_env "$triple" \
 	"powerpc64-linux-gnu-" \
 	"qemu-ppc64 -L /usr/powerpc64-linux-gnu"
 
+# setup powerpc64le
+triple="powerpc64le-unknown-linux-gnu"
+rustup target add "$triple"
+set_env "$triple" \
+	"powerpc64le-linux-gnu-" \
+	"qemu-ppc64le -L /usr/powerpc64le-linux-gnu"
+
 # setup mips
 triple="mips-unknown-linux-gnu"
 rustup target add "$triple"
@@ -128,12 +136,26 @@ set_env "$triple" \
 	"mips-linux-gnu-" \
 	"qemu-mips -L /usr/mips-linux-gnu"
 
+# setup mipsel
+triple="mipsel-unknown-linux-gnu"
+rustup target add "$triple"
+set_env "$triple" \
+	"mipsel-linux-gnu-" \
+	"qemu-mipsel -L /usr/mipsel-linux-gnu"
+
 # setup mips64
 triple="mips64-unknown-linux-gnuabi64"
 rustup target add "$triple"
 set_env "$triple" \
 	"mips64-linux-gnuabi64-" \
 	"qemu-mips64 -L /usr/mips64-linux-gnuabi64"
+
+# setup mips64el
+triple="mips64el-unknown-linux-gnuabi64"
+rustup target add "$triple"
+set_env "$triple" \
+	"mips64el-linux-gnuabi64-" \
+	"qemu-mips64el -L /usr/mips64el-linux-gnuabi64"
 
 # setup s390x
 triple="s390x-unknown-linux-gnu"

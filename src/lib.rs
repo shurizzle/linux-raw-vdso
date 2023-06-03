@@ -432,11 +432,25 @@ mod tests {
     const FAKE: &str = "fake/mips.so";
     #[cfg(all(
         target_os = "linux",
+        target_arch = "mips",
+        target_endian = "little",
+        target_pointer_width = "32"
+    ))]
+    const FAKE: &str = "fake/mipsel.so";
+    #[cfg(all(
+        target_os = "linux",
         target_arch = "mips64",
         target_endian = "big",
         target_pointer_width = "64"
     ))]
     const FAKE: &str = "fake/mips64.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "mips64",
+        target_endian = "little",
+        target_pointer_width = "64"
+    ))]
+    const FAKE: &str = "fake/mips64el.so";
     #[cfg(all(
         target_os = "linux",
         target_arch = "powerpc",
@@ -451,6 +465,13 @@ mod tests {
         target_pointer_width = "64"
     ))]
     const FAKE: &str = "fake/powerpc64.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "powerpc64",
+        target_endian = "little",
+        target_pointer_width = "64"
+    ))]
+    const FAKE: &str = "fake/powerpc64le.so";
     #[cfg(all(
         target_os = "linux",
         target_arch = "riscv32",

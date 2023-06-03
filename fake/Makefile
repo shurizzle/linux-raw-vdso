@@ -1,4 +1,4 @@
-all: aarch64.so arm.so loongarch64.so mips.so mips64.so powerpc.so powerpc64.so x86_64.so riscv64.so s390x.so x86.so clean
+all: aarch64.so arm.so loongarch64.so mips.so mipsel.so mips64.so mips64el.so powerpc.so powerpc64.so powerpc64le.so x86_64.so riscv64.so s390x.so x86.so clean
 
 aarch64.so:
 	aarch64-linux-gnu-gcc -c -fPIC -o aarch64.o aarch64.c
@@ -16,9 +16,17 @@ mips.so:
 	mips-linux-gnu-gcc -c -fPIC -o mips.o mips.c
 	mips-linux-gnu-gcc -shared -o mips.so mips.o -Wl,--version-script,mips.map
 
+mipsel.so:
+	mipsel-linux-gnu-gcc -c -fPIC -o mipsel.o mips.c
+	mipsel-linux-gnu-gcc -shared -o mipsel.so mipsel.o -Wl,--version-script,mips.map
+
 mips64.so:
 	mips64-linux-gnuabi64-gcc -c -fPIC -o mips64.o mips.c
 	mips64-linux-gnuabi64-gcc -shared -o mips64.so mips64.o -Wl,--version-script,mips.map
+
+mips64el.so:
+	mips64el-linux-gnuabi64-gcc -c -fPIC -o mips64el.o mips.c
+	mips64el-linux-gnuabi64-gcc -shared -o mips64el.so mips64el.o -Wl,--version-script,mips.map
 
 powerpc.so:
 	powerpc-linux-gnu-gcc -c -fPIC -o powerpc.o powerpc.c
@@ -27,6 +35,10 @@ powerpc.so:
 powerpc64.so:
 	powerpc64-linux-gnu-gcc -c -fPIC -o powerpc64.o powerpc64.c
 	powerpc64-linux-gnu-gcc -shared -o powerpc64.so powerpc64.o -Wl,--version-script,powerpc64.map
+
+powerpc64le.so:
+	powerpc64le-linux-gnu-gcc -c -fPIC -o powerpc64le.o powerpc64.c
+	powerpc64le-linux-gnu-gcc -shared -o powerpc64le.so powerpc64le.o -Wl,--version-script,powerpc64.map
 
 x86_64.so:
 	# x86-64-linux-gnu-gcc -c -fPIC -o x86_64.o x86_64.c
