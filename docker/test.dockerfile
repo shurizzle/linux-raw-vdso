@@ -1,7 +1,6 @@
 FROM ubuntu:22.04
 
 ADD /scripts/install.sh /install.sh
-ADD /scripts/test.sh /test.sh
 ADD /docker/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /install.sh && \

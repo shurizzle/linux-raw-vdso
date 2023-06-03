@@ -379,10 +379,103 @@ impl VdsoHeader {
 
 #[cfg(test)]
 mod tests {
+    extern crate std;
+
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "x86_64",
+        target_endian = "little",
+        target_pointer_width = "64"
+    ))]
+    const FAKE: &str = "fake/x86_64.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "x86_64",
+        target_endian = "little",
+        target_pointer_width = "32"
+    ))]
+    const FAKE: &str = "fake/x32.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "x86",
+        target_endian = "little",
+        target_pointer_width = "32"
+    ))]
+    const FAKE: &str = "fake/x86.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "aarch64",
+        target_endian = "little",
+        target_pointer_width = "64"
+    ))]
+    const FAKE: &str = "fake/aarch64.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "arm",
+        target_endian = "little",
+        target_pointer_width = "32"
+    ))]
+    const FAKE: &str = "fake/arm.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "loongarch64",
+        target_endian = "little",
+        target_pointer_width = "64"
+    ))]
+    const FAKE: &str = "fake/loongarch64.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "mips",
+        target_endian = "big",
+        target_pointer_width = "32"
+    ))]
+    const FAKE: &str = "fake/mips.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "mips64",
+        target_endian = "big",
+        target_pointer_width = "64"
+    ))]
+    const FAKE: &str = "fake/mips64.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "powerpc",
+        target_endian = "big",
+        target_pointer_width = "32"
+    ))]
+    const FAKE: &str = "fake/powerpc.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "powerpc64",
+        target_endian = "big",
+        target_pointer_width = "64"
+    ))]
+    const FAKE: &str = "fake/powerpc64.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "riscv32",
+        target_endian = "little",
+        target_pointer_width = "32"
+    ))]
+    const FAKE: &str = "fake/riscv32.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "riscv64",
+        target_endian = "little",
+        target_pointer_width = "64"
+    ))]
+    const FAKE: &str = "fake/riscv64.so";
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "s390x",
+        target_endian = "big",
+        target_pointer_width = "64"
+    ))]
+    const FAKE: &str = "fake/s390x.so";
+
     #[test]
     fn parse() {
-        let ptr = unsafe { libc::getauxval(libc::AT_SYSINFO_EHDR) as *mut libc::c_void };
-        assert!(!ptr.is_null());
-        assert!(unsafe { super::Vdso::from_ptr(ptr).is_some() })
+        let data = std::fs::read(FAKE).unwrap();
+        assert!(unsafe { super::Vdso::from_ptr(data.as_ptr().cast()).is_some() })
     }
 }

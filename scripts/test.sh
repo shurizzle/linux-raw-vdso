@@ -2,6 +2,8 @@
 
 set -eux
 
+make -C fake all clean
+
 for target in \
 	aarch64-unknown-linux-gnu \
 	arm-unknown-linux-gnueabi \
@@ -13,7 +15,6 @@ for target in \
 	riscv64gc-unknown-linux-gnu \
 	s390x-unknown-linux-gnu \
 	i686-unknown-linux-gnu \
-	x86_64-unknown-linux-gnu \
-	x86_64-unknown-linux-gnux32; do
-	cargo +nightly -Z build-std build --target "$target" --release
+	x86_64-unknown-linux-gnu; do
+	cargo +nightly -Z build-std test --target "$target" --release
 done

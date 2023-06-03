@@ -16,4 +16,4 @@ exec docker run --rm \
 	-v "$(realpath "${SCRIPTPATH}/.."):/project" \
 	-v "$HOME:$HOME" \
 	-e "HOME=$HOME" \
-	"linux-raw-vdso/test" /test.sh
+	"linux-raw-vdso/test" ./scripts/test.sh

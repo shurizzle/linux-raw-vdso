@@ -31,8 +31,8 @@ apt-get update -y
 apt-get upgrade -y
 apt-get install -y build-essential wget qemu-user gcc-x86-64-linux-gnu \
 	gcc-i686-linux-gnu gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu \
-	gcc-riscv64-linux-gnu gcc-powerpc64-linux-gnu gcc-mips-linux-gnu \
-	gcc-mips64-linux-gnuabi64 gcc-s390x-linux-gnu
+	gcc-riscv64-linux-gnu gcc-powerpc64-linux-gnu gcc-powerpc-linux-gnu \
+	gcc-mips-linux-gnu gcc-mips64-linux-gnuabi64 gcc-s390x-linux-gnu
 
 if ! which rustup 2>/dev/null >/dev/null; then
 	RUSTUP_HOME="/opt/rust"
@@ -106,6 +106,13 @@ rustup target add "$triple"
 set_env "$triple" \
 	"riscv64-linux-gnu-" \
 	"qemu-riscv64 -L /usr/riscv64-linux-gnu"
+
+# setup powerpc
+triple="powerpc-unknown-linux-gnu"
+rustup target add "$triple"
+set_env "$triple" \
+	"powerpc-linux-gnu-" \
+	"qemu-ppc -L /usr/powerpc-linux-gnu"
 
 # setup powerpc64
 triple="powerpc64-unknown-linux-gnu"
