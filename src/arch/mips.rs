@@ -16,7 +16,6 @@ impl Vdso {
                 clock_gettime: ::core::ptr::null(),
             };
             {
-                let mut mandatory_count = 0usize;
                 for version in reader.versions() {
                     match version.hash() {
                         61765110 => {
@@ -33,12 +32,8 @@ impl Vdso {
                         _ => (),
                     }
                 }
-                if mandatory_count != 0 {
-                    return ::core::option::Option::None;
-                }
             }
             {
-                let mut mandatory_count = 0usize;
                 for symbol in reader.symbols() {
                     match crate::util::elf_hash(symbol.name()) {
                         128999177 => {
@@ -75,9 +70,6 @@ impl Vdso {
                         }
                         _ => (),
                     }
-                }
-                if mandatory_count != 0 {
-                    return ::core::option::Option::None;
                 }
             }
             Some(vdso_inst)

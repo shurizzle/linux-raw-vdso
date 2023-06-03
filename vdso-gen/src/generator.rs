@@ -131,7 +131,7 @@ pub(crate) fn generate_versions_parser(m_vs: &Vec<Box<str>>, o_vs: &Vec<Box<str>
                 EmptyBranch.to_tokens(&mut m);
                 m
             }));
-            if o_vs.is_empty() {
+            if o_vs.is_empty() && !m_vs.is_empty() {
                 tokens.append(ident("if"));
                 tokens.append(ident("mandatory_count"));
                 tokens.append(Punct::new('=', Spacing::Joint));
@@ -139,18 +139,24 @@ pub(crate) fn generate_versions_parser(m_vs: &Vec<Box<str>>, o_vs: &Vec<Box<str>
                 tokens.append(Literal::usize_unsuffixed(m_vs.len()));
                 tokens.append(Group::new(Delimiter::Brace, quote!(break;)));
             }
-            tokens
+            Group::new(Delimiter::Brace, tokens)
         };
 
-        let mut tokens = quote! {
-            let mut mandatory_count = 0usize;
-            for version in reader.versions()
+        let mut tokens = if m_vs.is_empty() {
+            quote!(for version in reader.versions())
+        } else {
+            quote! {
+                let mut mandatory_count = 0usize;
+                for version in reader.versions()
+            }
         };
-        tokens.append(Group::new(Delimiter::Brace, forbody));
+        tokens.append(forbody);
         tokens
     };
 
-    MandatoryCheck(m_vs.len()).to_tokens(&mut tokens);
+    if !m_vs.is_empty() {
+        MandatoryCheck(m_vs.len()).to_tokens(&mut tokens);
+    }
 
     tokens
 }
@@ -256,7 +262,7 @@ fn generate_symbols_parser(
                 EmptyBranch.to_tokens(&mut m);
                 m
             }));
-            if o_fs.is_empty() {
+            if o_fs.is_empty() && !m_fs.is_empty() {
                 tokens.append(ident("if"));
                 tokens.append(ident("mandatory_count"));
                 tokens.append(Punct::new('=', Spacing::Joint));
@@ -267,15 +273,21 @@ fn generate_symbols_parser(
             tokens
         };
 
-        let mut tokens = quote! {
-            let mut mandatory_count = 0usize;
-            for symbol in reader.symbols()
+        let mut tokens = if m_fs.is_empty() {
+            quote!(for symbol in reader.symbols())
+        } else {
+            quote! {
+                let mut mandatory_count = 0usize;
+                for symbol in reader.symbols()
+            }
         };
         tokens.append(Group::new(Delimiter::Brace, forbody));
         tokens
     };
 
-    MandatoryCheck(m_fs.len()).to_tokens(&mut tokens);
+    if !m_fs.is_empty() {
+        MandatoryCheck(m_fs.len()).to_tokens(&mut tokens);
+    }
 
     tokens
 }
