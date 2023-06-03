@@ -4,153 +4,61 @@
 
 #![no_std]
 
-#[cfg(any(feature = "aarch64", all(target_os = "linux", target_arch = "aarch64")))]
-#[path = "arch/aarch64.rs"]
-pub mod aarch64;
-#[cfg(any(feature = "arm", all(target_os = "linux", target_arch = "arm")))]
-#[path = "arch/arm.rs"]
-pub mod arm;
-#[cfg(all(
-    target_os = "linux",
-    not(any(
-        target_arch = "aarch64",
-        target_arch = "arm",
-        target_arch = "loongarch64",
-        target_arch = "mips",
-        target_arch = "mips64",
-        target_arch = "powerpc",
-        target_arch = "powerpc64",
-        target_arch = "riscv32",
-        target_arch = "riscv64",
-        target_arch = "s390x",
-        target_arch = "x86",
-        target_arch = "x86_64"
-    ))
-))]
-#[path = "arch/generic.rs"]
-mod generic;
-#[cfg(any(
-    feature = "loongarch64",
-    all(target_os = "linux", target_arch = "loongarch64")
-))]
-#[path = "arch/loongarch64.rs"]
-pub mod loongarch64;
-#[cfg(any(
-    feature = "loongarch64",
-    all(target_os = "linux", any(target_arch = "mips", target_arch = "mips64"))
-))]
-#[path = "arch/mips.rs"]
-pub mod mips;
-#[cfg(any(feature = "powerpc", all(target_os = "linux", target_arch = "powerpc")))]
-#[path = "arch/powerpc.rs"]
-pub mod powerpc;
-#[cfg(any(
-    feature = "powerpc64",
-    all(target_os = "linux", target_arch = "powerpc64")
-))]
-#[path = "arch/powerpc64.rs"]
-pub mod powerpc64;
-#[cfg(any(
-    feature = "riscv",
+#[cfg_attr(
+    all(target_os = "linux", target_arch = "aarch64"),
+    path = "arch/aarch64.rs"
+)]
+#[cfg_attr(all(target_os = "linux", target_arch = "arm"), path = "arch/arm.rs")]
+#[cfg_attr(
+    all(target_os = "linux", target_arch = "loongarch64"),
+    path = "arch/loongarch64.rs"
+)]
+#[cfg_attr(
+    all(target_os = "linux", any(target_arch = "mips", target_arch = "mips64")),
+    path = "arch/mips.rs"
+)]
+#[cfg_attr(
+    all(target_os = "linux", target_arch = "powerpc"),
+    path = "arch/powerpc.rs"
+)]
+#[cfg_attr(
+    all(target_os = "linux", target_arch = "powerpc64"),
+    path = "arch/powerpc64.rs"
+)]
+#[cfg_attr(
     all(
         target_os = "linux",
         any(target_arch = "riscv32", target_arch = "riscv64")
-    )
-))]
-#[path = "arch/riscv.rs"]
-pub mod riscv;
-#[cfg(any(feature = "s390x", all(target_os = "linux", target_arch = "s390x")))]
-#[path = "arch/s390x.rs"]
-pub mod s390x;
-#[cfg(any(
-    feature = "x32",
+    ),
+    path = "arch/riscv.rs"
+)]
+#[cfg_attr(
+    all(target_os = "linux", target_arch = "s390x"),
+    path = "arch/s390x.rs"
+)]
+#[cfg_attr(
     all(
         target_os = "linux",
         target_arch = "x86_64",
         target_pointer_width = "32"
-    )
-))]
-#[path = "arch/x32.rs"]
-pub mod x32;
-#[cfg(any(feature = "x86", all(target_os = "linux", target_arch = "x86",)))]
-#[path = "arch/x86.rs"]
-pub mod x86;
-#[cfg(any(
-    feature = "x86_64",
+    ),
+    path = "arch/x32.rs"
+)]
+#[cfg_attr(all(target_os = "linux", target_arch = "x86"), path = "arch/x86.rs")]
+#[cfg_attr(
     all(
         target_os = "linux",
         target_arch = "x86_64",
         target_pointer_width = "64"
-    )
-))]
-#[path = "arch/x86_64.rs"]
-pub mod x86_64;
-
-#[cfg(all(target_os = "linux", target_arch = "aarch64"))]
-#[cfg(inline)]
-pub use self::aarch64::Vdso;
-#[cfg(all(target_os = "linux", target_arch = "arm"))]
-#[cfg(inline)]
-pub use self::arm::Vdso;
-#[cfg(all(
-    target_os = "linux",
-    not(any(
-        target_arch = "aarch64",
-        target_arch = "arm",
-        target_arch = "loongarch64",
-        target_arch = "mips",
-        target_arch = "mips64",
-        target_arch = "powerpc",
-        target_arch = "powerpc64",
-        target_arch = "riscv32",
-        target_arch = "riscv64",
-        target_arch = "s390x",
-        target_arch = "x86",
-        target_arch = "x86_64"
-    ))
-))]
-#[cfg(inline)]
-pub use self::generic::Vdso;
-#[cfg(all(target_os = "linux", target_arch = "loongarch64"))]
-#[cfg(inline)]
-pub use self::loongarch64::Vdso;
-#[cfg(all(target_os = "linux", any(target_arch = "mips", target_arch = "mips64")))]
-#[cfg(inline)]
-pub use self::mips::Vdso;
-#[cfg(all(target_os = "linux", target_arch = "powerpc"))]
-#[cfg(inline)]
-pub use self::powerpc::Vdso;
-#[cfg(all(target_os = "linux", target_arch = "powerpc64"))]
-#[cfg(inline)]
-pub use self::powerpc64::Vdso;
-#[cfg(all(
-    target_os = "linux",
-    any(target_arch = "riscv32", target_arch = "riscv64")
-))]
-#[cfg(inline)]
-pub use self::riscv::Vdso;
-#[cfg(all(target_os = "linux", target_arch = "s390x"))]
-#[cfg(inline)]
-pub use self::s390x::Vdso;
-#[cfg(all(
-    target_os = "linux",
-    target_arch = "x86_64",
-    target_pointer_width = "32"
-))]
-#[cfg(inline)]
-pub use self::x32::Vdso;
-#[cfg(all(target_os = "linux", target_arch = "x86"))]
-#[cfg(inline)]
-pub use self::x86::Vdso;
-#[cfg(all(
-    target_os = "linux",
-    target_arch = "x86_64",
-    target_pointer_width = "64"
-))]
-pub use self::x86_64::Vdso;
+    ),
+    path = "arch/x86_64.rs"
+)]
+mod arch;
 
 mod elf;
 pub(crate) mod util;
+
+pub use arch::Vdso;
 
 use core::{marker::PhantomData, ptr};
 
@@ -469,21 +377,12 @@ impl VdsoHeader {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use linux_auxv::*;
-//
-//     #[test]
-//     fn retrieve() {
-//         let ptr = Auxv::get().into_iter().find_map(|v| {
-//             if let AuxvType::SysInfoHeader(p) = v {
-//                 Some(p)
-//             } else {
-//                 None
-//             }
-//         });
-//         assert!(ptr.is_some());
-//         let ptr = ptr.unwrap();
-//         assert!(unsafe { super::Vdso::from_ptr(ptr).is_some() })
-//     }
-// }
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn parse() {
+        let ptr = unsafe { libc::getauxval(libc::AT_SYSINFO_EHDR) as *mut libc::c_void };
+        assert!(!ptr.is_null());
+        assert!(unsafe { super::Vdso::from_ptr(ptr).is_some() })
+    }
+}
