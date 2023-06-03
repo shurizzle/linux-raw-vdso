@@ -299,7 +299,7 @@ impl VdsoHeader {
         }
 
         // Test class
-        if head.0.e_ident[elf::EI_CLASS] != elf::CLASS {
+        if head.0.e_ident[elf::EI_CLASS] != elf::ELFCLASS {
             return None;
         }
 

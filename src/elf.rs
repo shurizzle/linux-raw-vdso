@@ -27,10 +27,6 @@ pub const EI_VERSION: usize = 6;
 /// Endianness index
 pub const EI_DATA: usize = 5;
 
-#[cfg(target_pointer_width = "32")]
-pub const CLASS: u8 = 1;
-#[cfg(target_pointer_width = "64")]
-pub const CLASS: u8 = 2;
 pub const EV_CURRENT: u8 = 1;
 
 #[cfg(target_arch = "x86")]
