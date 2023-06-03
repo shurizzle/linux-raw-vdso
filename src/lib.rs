@@ -5,50 +5,98 @@
 #![no_std]
 
 #[cfg_attr(
-    all(target_os = "linux", target_arch = "aarch64"),
+    all(
+        target_os = "linux",
+        target_arch = "aarch64",
+        target_pointer_width = "64"
+    ),
     path = "arch/aarch64.rs"
 )]
-#[cfg_attr(all(target_os = "linux", target_arch = "arm"), path = "arch/arm.rs")]
 #[cfg_attr(
-    all(target_os = "linux", target_arch = "loongarch64"),
+    all(target_os = "linux", target_arch = "arm", target_pointer_width = "32"),
+    path = "arch/arm.rs"
+)]
+#[cfg_attr(
+    all(
+        target_os = "linux",
+        target_arch = "loongarch64",
+        target_endian = "little",
+        target_pointer_width = "64"
+    ),
     path = "arch/loongarch64.rs"
 )]
 #[cfg_attr(
-    all(target_os = "linux", any(target_arch = "mips", target_arch = "mips64")),
+    all(
+        target_os = "linux",
+        any(
+            all(target_arch = "mips", target_pointer_width = "32"),
+            all(target_arch = "mips64", target_pointer_width = "64")
+        )
+    ),
     path = "arch/mips.rs"
 )]
 #[cfg_attr(
-    all(target_os = "linux", target_arch = "powerpc"),
+    all(
+        target_os = "linux",
+        target_arch = "powerpc",
+        target_endian = "big",
+        target_pointer_width = "32"
+    ),
     path = "arch/powerpc.rs"
 )]
 #[cfg_attr(
-    all(target_os = "linux", target_arch = "powerpc64"),
+    all(
+        target_os = "linux",
+        target_arch = "powerpc64",
+        target_pointer_width = "64"
+    ),
     path = "arch/powerpc64.rs"
 )]
 #[cfg_attr(
     all(
         target_os = "linux",
-        any(target_arch = "riscv32", target_arch = "riscv64")
+        all(
+            any(
+                all(target_arch = "riscv32", target_pointer_width = "32"),
+                all(target_arch = "riscv64", target_pointer_width = "64")
+            ),
+            target_endian = "little"
+        )
     ),
     path = "arch/riscv.rs"
 )]
 #[cfg_attr(
-    all(target_os = "linux", target_arch = "s390x"),
+    all(
+        target_os = "linux",
+        target_arch = "s390x",
+        target_endian = "big",
+        target_pointer_width = "64"
+    ),
     path = "arch/s390x.rs"
 )]
 #[cfg_attr(
     all(
         target_os = "linux",
         target_arch = "x86_64",
+        target_endian = "little",
         target_pointer_width = "32"
     ),
     path = "arch/x32.rs"
 )]
-#[cfg_attr(all(target_os = "linux", target_arch = "x86"), path = "arch/x86.rs")]
+#[cfg_attr(
+    all(
+        target_os = "linux",
+        target_arch = "x86",
+        target_endian = "little",
+        target_pointer_width = "32"
+    ),
+    path = "arch/x86.rs"
+)]
 #[cfg_attr(
     all(
         target_os = "linux",
         target_arch = "x86_64",
+        target_endian = "little",
         target_pointer_width = "64"
     ),
     path = "arch/x86_64.rs"
@@ -405,16 +453,10 @@ mod tests {
     #[cfg(all(
         target_os = "linux",
         target_arch = "aarch64",
-        target_endian = "little",
         target_pointer_width = "64"
     ))]
     const FAKE: &str = "fake/aarch64.so";
-    #[cfg(all(
-        target_os = "linux",
-        target_arch = "arm",
-        target_endian = "little",
-        target_pointer_width = "32"
-    ))]
+    #[cfg(all(target_os = "linux", target_arch = "arm", target_pointer_width = "32"))]
     const FAKE: &str = "fake/arm.so";
     #[cfg(all(
         target_os = "linux",
@@ -494,9 +536,192 @@ mod tests {
     ))]
     const FAKE: &str = "fake/s390x.so";
 
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "x86_64",
+        target_endian = "little",
+        any(target_pointer_width = "64", target_pointer_width = "32")
+    ))]
     #[test]
     fn parse() {
         let data = std::fs::read(FAKE).unwrap();
-        assert!(unsafe { super::Vdso::from_ptr(data.as_ptr().cast()).is_some() })
+        let vdso = unsafe { super::Vdso::from_ptr(data.as_ptr().cast()) };
+        assert!(vdso.is_some());
+        let vdso = vdso.unwrap();
+        assert!(!vdso.clock_gettime.is_null());
+        assert!(!vdso.getcpu.is_null());
+        assert!(!vdso.gettimeofday.is_null());
+        assert!(!vdso.time.is_null());
+    }
+
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "x86",
+        target_endian = "little",
+        target_pointer_width = "32"
+    ))]
+    #[test]
+    fn parse() {
+        let data = std::fs::read(FAKE).unwrap();
+        let vdso = unsafe { super::Vdso::from_ptr(data.as_ptr().cast()) };
+        assert!(vdso.is_some());
+        let vdso = vdso.unwrap();
+        assert!(!vdso.sigreturn.is_null());
+        assert!(!vdso.rt_sigreturn.is_null());
+        assert!(!vdso.vsyscall.is_null());
+        assert!(!vdso.clock_gettime.is_null());
+        assert!(!vdso.gettimeofday.is_null());
+        assert!(!vdso.time.is_null());
+    }
+
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "aarch64",
+        target_pointer_width = "64"
+    ))]
+    #[test]
+    fn parse() {
+        let data = std::fs::read(FAKE).unwrap();
+        let vdso = unsafe { super::Vdso::from_ptr(data.as_ptr().cast()) };
+        assert!(vdso.is_some());
+        let vdso = vdso.unwrap();
+        assert!(!vdso.rt_sigreturn.is_null());
+        assert!(!vdso.gettimeofday.is_null());
+        assert!(!vdso.clock_gettime.is_null());
+        assert!(!vdso.clock_getres.is_null());
+    }
+
+    #[cfg(all(target_os = "linux", target_arch = "arm", target_pointer_width = "32"))]
+    #[test]
+    fn parse() {
+        let data = std::fs::read(FAKE).unwrap();
+        let vdso = unsafe { super::Vdso::from_ptr(data.as_ptr().cast()) };
+        assert!(vdso.is_some());
+        let vdso = vdso.unwrap();
+        assert!(!vdso.gettimeofday.is_null());
+        assert!(!vdso.clock_gettime.is_null());
+    }
+
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "loongarch64",
+        target_endian = "little",
+        target_pointer_width = "64"
+    ))]
+    #[test]
+    fn parse() {
+        let data = std::fs::read(FAKE).unwrap();
+        let vdso = unsafe { super::Vdso::from_ptr(data.as_ptr().cast()) };
+        assert!(vdso.is_some());
+        let vdso = vdso.unwrap();
+        assert!(!vdso.getcpu.is_null());
+        assert!(!vdso.clock_getres.is_null());
+        assert!(!vdso.clock_gettime.is_null());
+        assert!(!vdso.gettimeofday.is_null());
+        assert!(!vdso.rt_sigreturn.is_null());
+    }
+
+    #[cfg(all(
+        target_os = "linux",
+        any(
+            all(target_arch = "mips", target_pointer_width = "32"),
+            all(target_arch = "mips64", target_pointer_width = "64")
+        )
+    ))]
+    #[test]
+    fn parse() {
+        let data = std::fs::read(FAKE).unwrap();
+        let vdso = unsafe { super::Vdso::from_ptr(data.as_ptr().cast()) };
+        assert!(vdso.is_some());
+        let vdso = vdso.unwrap();
+        assert!(!vdso.gettimeofday.is_null());
+        assert!(!vdso.clock_gettime.is_null());
+    }
+
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "powerpc",
+        target_endian = "big",
+        target_pointer_width = "32"
+    ))]
+    #[test]
+    fn parse() {
+        let data = std::fs::read(FAKE).unwrap();
+        let vdso = unsafe { super::Vdso::from_ptr(data.as_ptr().cast()) };
+        assert!(vdso.is_some());
+        let vdso = vdso.unwrap();
+        assert!(!vdso.clock_getres.is_null());
+        assert!(!vdso.clock_gettime.is_null());
+        assert!(!vdso.clock_gettime64.is_null());
+        assert!(!vdso.datapage_offset.is_null());
+        assert!(!vdso.get_syscall_map.is_null());
+        assert!(!vdso.get_tbfreq.is_null());
+        assert!(!vdso.gettimeofday.is_null());
+        assert!(!vdso.sigtramp_rt32.is_null());
+        assert!(!vdso.sigtramp32.is_null());
+        assert!(!vdso.sync_dicache.is_null());
+        assert!(!vdso.sync_dicache_p5.is_null());
+    }
+
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "powerpc64",
+        target_pointer_width = "64"
+    ))]
+    #[test]
+    fn parse() {
+        let data = std::fs::read(FAKE).unwrap();
+        let vdso = unsafe { super::Vdso::from_ptr(data.as_ptr().cast()) };
+        assert!(vdso.is_some());
+        let vdso = vdso.unwrap();
+        assert!(!vdso.clock_getres.is_null());
+        assert!(!vdso.clock_gettime.is_null());
+        assert!(!vdso.clock_gettime64.is_null());
+        assert!(!vdso.datapage_offset.is_null());
+        assert!(!vdso.get_syscall_map.is_null());
+        assert!(!vdso.get_tbfreq.is_null());
+        assert!(!vdso.getcpu.is_null());
+        assert!(!vdso.gettimeofday.is_null());
+        assert!(!vdso.sigtramp_rt32.is_null());
+        assert!(!vdso.sigtramp32.is_null());
+        assert!(!vdso.sync_dicache.is_null());
+        assert!(!vdso.sync_dicache_p5.is_null());
+    }
+
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "riscv64",
+        target_endian = "little",
+        target_pointer_width = "64"
+    ))]
+    #[test]
+    fn parse() {
+        let data = std::fs::read(FAKE).unwrap();
+        let vdso = unsafe { super::Vdso::from_ptr(data.as_ptr().cast()) };
+        assert!(vdso.is_some());
+        let vdso = vdso.unwrap();
+        assert!(!vdso.rt_sigreturn.is_null());
+        assert!(!vdso.gettimeofday.is_null());
+        assert!(!vdso.clock_gettime.is_null());
+        assert!(!vdso.clock_getres.is_null());
+        assert!(!vdso.getcpu.is_null());
+        assert!(!vdso.flush_icache.is_null());
+    }
+
+    #[cfg(all(
+        target_os = "linux",
+        target_arch = "s390x",
+        target_endian = "big",
+        target_pointer_width = "64"
+    ))]
+    #[test]
+    fn parse() {
+        let data = std::fs::read(FAKE).unwrap();
+        let vdso = unsafe { super::Vdso::from_ptr(data.as_ptr().cast()) };
+        assert!(vdso.is_some());
+        let vdso = vdso.unwrap();
+        assert!(!vdso.clock_getres.is_null());
+        assert!(!vdso.clock_gettime.is_null());
+        assert!(!vdso.gettimeofday.is_null());
     }
 }

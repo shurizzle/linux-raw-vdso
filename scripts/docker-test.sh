@@ -11,7 +11,12 @@ if ! (docker images --format '{{.Repository}}' | grep "^linux-raw-vdso/test\$");
 	"$SCRIPTPATH/docker-create.sh"
 fi
 
-exec docker run --rm \
+tty=
+if [ -t 0 ]; then
+	tty=-it
+fi
+
+exec docker run --rm $tty \
 	--user "$(id -u):$(id -g)" \
 	-v "$(realpath "${SCRIPTPATH}/.."):/project" \
 	-v "$HOME:$HOME" \
