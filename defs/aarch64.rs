@@ -1,3 +1,4 @@
+/// vDSO for `aarch64`
 #[derive(Debug, Copy, Clone)]
 pub struct Vdso {
     pub rt_sigreturn:  __kernel_rt_sigreturn    @ "LINUX_2.6.39",

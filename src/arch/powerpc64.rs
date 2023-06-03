@@ -1,4 +1,5 @@
 #![allow(clippy::single_match)]
+#[doc = " vDSO for `powerpc64`"]
 #[derive(Debug, Copy, Clone)]
 pub struct Vdso {
     pub clock_getres: *const ::core::ffi::c_void,
@@ -306,6 +307,10 @@ impl Vdso {
             Some(vdso_inst)
         }
     }
+    #[doc = r" Parse vDSO from memory"]
+    #[doc = r" # Safety"]
+    #[doc = r" This is unsafe because we can't validate the given pointer so"]
+    #[doc = r" use it carefully"]
     pub unsafe fn from_ptr(ptr: *const ::core::ffi::c_void) -> ::core::option::Option<Self> {
         Self::from_reader(crate::VdsoReader::from_ptr(ptr)?)
     }

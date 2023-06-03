@@ -1,3 +1,7 @@
+//! A tiny library to parse the in-memory vDSO.
+//! For more documentation of what's vDSO and why we need it on Linux see
+//! [here](https://man7.org/linux/man-pages/man7/vdso.7.html).
+
 #![no_std]
 
 #[cfg(any(feature = "aarch64", all(target_os = "linux", target_arch = "aarch64")))]

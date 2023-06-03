@@ -1,3 +1,4 @@
+/// vDSO for `x86_64`
 #[derive(Debug, Copy, Clone)]
 pub struct Vdso {
     pub clock_gettime: __vdso_clock_gettime @ "LINUX_2.6",

@@ -1,3 +1,4 @@
+/// vDSO for `arm`
 #[derive(Debug, Copy, Clone)]
 pub struct Vdso {
     /// exported since Linux 4.1

@@ -1,3 +1,4 @@
+/// vDSO for `loongarch64`
 #[derive(Debug, Copy, Clone)]
 pub struct Vdso {
     pub getcpu:         __vdso_getcpu           @ "LINUX_5.10",

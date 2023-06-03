@@ -1,3 +1,4 @@
+/// vDSO for `mips` (both 32 and 64)
 #[derive(Debug, Copy, Clone)]
 pub struct Vdso {
     /// exported since Linux 4.4

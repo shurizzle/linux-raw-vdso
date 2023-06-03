@@ -1,3 +1,4 @@
+/// vDSO for `powerpc`
 #[derive(Debug, Copy, Clone)]
 pub struct Vdso {
     pub clock_getres:    __kernel_clock_getres      @ "LINUX_2.6.15",

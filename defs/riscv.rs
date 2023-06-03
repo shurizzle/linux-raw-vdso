@@ -1,3 +1,4 @@
+/// vDSO for `riscv` (both 32 and 64)
 #[derive(Debug, Copy, Clone)]
 pub struct Vdso {
     pub rt_sigreturn:  __vdso_rt_sigreturn    @ "LINUX_4.15",

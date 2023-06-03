@@ -1,3 +1,4 @@
+/// vDSO for `x86`
 #[derive(Debug, Copy, Clone)]
 pub struct Vdso {
     pub sigreturn:      __kernel_sigreturn      @ "LINUX_2.5",

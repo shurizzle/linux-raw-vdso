@@ -43,6 +43,10 @@ pub fn vdso(item: TokenStream) -> Result<TokenStream> {
             tokens
         }));
         quote! {
+            /// Parse vDSO from memory
+            /// # Safety
+            /// This is unsafe because we can't validate the given pointer so
+            /// use it carefully
             pub unsafe fn from_ptr(ptr: *const ::core::ffi::c_void) -> ::core::option::Option<Self> {
                 Self::from_reader(crate::VdsoReader::from_ptr(ptr)?)
             }
