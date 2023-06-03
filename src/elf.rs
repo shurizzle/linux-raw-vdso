@@ -45,6 +45,8 @@ pub const EM_CURRENT: u16 = 0x15;
 pub const EM_CURRENT: u16 = 0xf3;
 #[cfg(target_arch = "s390x")]
 pub const EM_CURRENT: u16 = 0x16;
+#[cfg(target_arch = "loongarch64")]
+pub const EM_CURRENT: u16 = 0x102;
 #[cfg(target_arch = "x86_64")]
 pub const EM_CURRENT: u16 = 0x3e;
 
