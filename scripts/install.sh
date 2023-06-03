@@ -15,21 +15,30 @@ set_env() {
 	ucase_triple="$(printf %s "$triple" | tr 'a-z-' 'A-Z_')"
 
 	(
-		echo "CC_${lcase_triple}=\"${prefix}gcc\""
-		echo "CXX_${lcase_triple}=\"${prefix}g++\""
-		echo "AR_${lcase_triple}=\"${prefix}ar\""
-		echo "CARGO_TARGET_${ucase_triple}_LINKER=\"${prefix}gcc\""
-		echo "CARGO_TARGET_${ucase_triple}_RUNNER=\"$runner\""
+		echo "CC_${lcase_triple}=${prefix}gcc"
+		echo "CXX_${lcase_triple}=${prefix}g++"
+		echo "AR_${lcase_triple}=${prefix}ar"
+		echo "CARGO_TARGET_${ucase_triple}_LINKER=${prefix}gcc"
+		echo "CARGO_TARGET_${ucase_triple}_RUNNER=$runner"
 	) >>"$ENVFILE"
 }
+
+sudo=
+if [ "${CI:-false}" = true ]; then
+	sudo=sudo
+fi
 
 remove_wget=false
 if ! which wget 2>/dev/null >/dev/null; then
 	remove_wget=true
 fi
-apt-get update -y
-apt-get upgrade -y
-apt-get install -y build-essential wget qemu-user gcc-x86-64-linux-gnu \
+
+$sudo apt-get update -y
+if [ "${CI:-false}" != true ]; then
+	$sudo apt-get upgrade -y
+fi
+
+$sudo apt-get install -y build-essential wget qemu-user gcc-x86-64-linux-gnu \
 	gcc-i686-linux-gnu gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu \
 	gcc-riscv64-linux-gnu gcc-powerpc64-linux-gnu gcc-powerpc64le-linux-gnu \
 	gcc-powerpc-linux-gnu gcc-mips-linux-gnu gcc-mipsel-linux-gnu \
@@ -43,34 +52,38 @@ if ! which rustup 2>/dev/null >/dev/null; then
 	cd
 	wget https://sh.rustup.rs -O rustup-init
 	chmod +x rustup-init
-	./rustup-init -y --no-modify-path
+	./rustup-init -y --no-modify-path --default-toolchain 1.38.0
 	PATH="$PATH:/opt/rust/bin"
 	(
-		echo 'RUSTUP_HOME="/opt/rust"'
-		echo 'PATH="$PATH:/opt/rust/bin"'
+		echo 'RUSTUP_HOME=/opt/rust'
+		echo PATH="$PATH:/opt/rust/bin"
 	) >>"$ENVFILE"
 
 	rm -f rustup-init
+else
+	rustup toolchain install 1.38.0
+	rustup default 1.38.0
 fi
+rustup toolchain install 1.42.0
 rustup toolchain install nightly
 rustup component add rust-src --toolchain nightly
 
 # install loongarch64 toolchain
 wget https://github.com/loongson/build-tools/releases/download/2022.09.06/loongarch64-clfs-6.3-cross-tools-gcc-glibc.tar.xz
 tar xf loongarch64-clfs-6.3-cross-tools-gcc-glibc.tar.xz
-mkdir -p /opt
-mv cross-tools /opt/loongarch64-unknown-linux-gnu
+$sudo mkdir -p /opt
+$sudo mv cross-tools /opt/loongarch64-unknown-linux-gnu
 rm -f loongarch64-clfs-6.3-cross-tools-gcc-glibc.tar.xz
 for tool in addr2line ar as c++ c++filt cpp elfedit g++ gcc gcc-ar gcc-nm \
 	gcc-ranlib gcov gcov-dump gcov-tool gprof ld ld.bfd lto-dump nm objcopy \
 	objdump ranlib readelf size strings strip; do
-	ln -s "/opt/loongarch64-unknown-linux-gnu/bin/loongarch64-unknown-linux-gnu-$tool" "/bin/loongarch64-linux-gnu-$tool"
+	$sudo ln -s "/opt/loongarch64-unknown-linux-gnu/bin/loongarch64-unknown-linux-gnu-$tool" "/bin/loongarch64-linux-gnu-$tool"
 done
 
 # install loongarch64 qemu
 wget https://github.com/loongson/build-tools/releases/download/2022.09.06/qemu-loongarch64
 chmod +x qemu-loongarch64
-mv qemu-loongarch64 /bin/qemu-loongarch64
+$sudo mv qemu-loongarch64 /bin/qemu-loongarch64
 
 # setup loongarch64
 triple="loongarch64-unknown-linux-gnu"
@@ -103,7 +116,7 @@ set_env "$triple" \
 
 # setup riscv64
 triple="riscv64gc-unknown-linux-gnu"
-rustup target add "$triple"
+rustup target add "$triple" --toolchain 1.42.0
 set_env "$triple" \
 	"riscv64-linux-gnu-" \
 	"qemu-riscv64 -L /usr/riscv64-linux-gnu"
@@ -165,6 +178,6 @@ set_env "$triple" \
 	"qemu-s390x -L /usr/s390x-linux-gnu"
 
 if $remove_wget; then
-	apt-get -y purge wget
+	$sudo apt-get -y purge wget
 fi
-apt-get -y autoremove
+$sudo apt-get -y autoremove
