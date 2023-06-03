@@ -30,7 +30,7 @@
         target_os = "linux",
         any(
             all(target_arch = "mips", target_pointer_width = "32"),
-            all(target_arch = "mips64", target_pointer_width = "64")
+            target_arch = "mips64"
         )
     ),
     path = "arch/mips.rs"
@@ -625,7 +625,7 @@ mod tests {
         target_os = "linux",
         any(
             all(target_arch = "mips", target_pointer_width = "32"),
-            all(target_arch = "mips64", target_pointer_width = "64")
+            target_arch = "mips64"
         )
     ))]
     #[test]
