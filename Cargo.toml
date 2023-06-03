@@ -3,6 +3,34 @@ exclude = ["vdso-gen"]
 
 [package]
 name = "linux-raw-vdso"
-version = "0.0.1"
+version = "0.1.0"
+authors = ["shurizzle <shura1991@gmail.com>"]
 edition = "2018"
+license = "MIT"
+description = "Linux vDSO parser for all the architectures"
+keywords = ["linux", "no_std", "vdso"]
+readme = "README.md"
+repository = "https://github.com/shurizzle/linux-raw-vdso"
+homepage = "https://github.com/shurizzle/linux-raw-vdso"
+documentation = "https://docs.rs/linux-raw-vdso"
 
+[package.metadata]
+msrv = "1.38.0"
+
+[package.metadata.docs.rs]
+default-target = "x86_64-unknown-linux-gnu"
+targets = [
+  "aarch64-unknown-linux-gnu",
+  "arm-unknown-linux-gnueabi",
+  "mips-unknown-linux-gnu",
+  "mips64-unknown-linux-gnuabi64",
+  "powerpc-unknown-linux-gnu",
+  "powerpc64-unknown-linux-gnu",
+  "riscv32gc-unknown-linux-gnu",
+  "riscv64gc-unknown-linux-gnu",
+  "s390x-unknown-linux-gnu",
+  "i686-unknown-linux-gnu",
+  "x86_64-unknown-linux-gnux32",
+  "loongarch64-unknown-linux-gnu",
+]
+cargo-args = ["-Z", "build-std=core"]
