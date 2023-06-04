@@ -16,7 +16,7 @@ This library is entirely `no_std`.
 ### Platforms
 
 |    arch     | implemented | tested |
-|-------------|-------------|--------|
+|-------------|:-----------:|:------:|
 | aarch64     |      ✅     |   ✅   |
 | aarch64_be  |      ✅     |   ❌   |
 | arm         |      ✅     |   ✅   |
