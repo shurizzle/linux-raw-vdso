@@ -21,4 +21,4 @@ for target in \
 done
 
 cargo +1.42.0 test --target riscv64gc-unknown-linux-gnu --release
-cargo +nightly -Z build-std test --target loongarch64-unknown-linux-gnu --release
+cargo +nightly test --target loongarch64-unknown-linux-gnu --release
