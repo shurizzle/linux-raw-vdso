@@ -1,5 +1,6 @@
 # linux-vdso-raw
 
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/shurizzle/linux-raw-vdso/unit-test.yml?branch=master&style=for-the-badge)
 [![Crates.io](https://img.shields.io/crates/v/linux-raw-vdso?style=for-the-badge)](https://crates.io/crates/linux-raw-vdso)
 [![docs.rs](https://img.shields.io/docsrs/linux-raw-vdso?style=for-the-badge)](https://docs.rs/linux-raw-vdso)
 ![Crates.io](https://img.shields.io/crates/l/linux-raw-vdso?style=for-the-badge)
