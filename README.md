@@ -45,4 +45,9 @@ directory so don't touch auto generated files please.
 If you need to add or change something look in `defs` directory instead.
 
 ### MSRV
+
 1.38.0
+
+`riscv64`: 1.42.0
+
+`loongarch64`: nightly
