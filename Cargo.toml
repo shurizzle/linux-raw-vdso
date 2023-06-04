@@ -30,7 +30,8 @@ targets = [
   "riscv64gc-unknown-linux-gnu",
   "s390x-unknown-linux-gnu",
   "i686-unknown-linux-gnu",
-  "x86_64-unknown-linux-gnux32",
   "loongarch64-unknown-linux-gnu",
+  "x86_64-unknown-linux-gnux32",
+  "armeb-unknown-linux-gnueabi",
 ]
 cargo-args = ["-Z", "build-std=core"]
