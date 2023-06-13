@@ -18,11 +18,10 @@ impl Vdso {
     fn from_reader(reader: crate::VdsoReader) -> ::core::option::Option<Self> {
         unsafe {
             let mut version_mandatory_0 = 0u16;
-            let mut version_mandatory_1 = 0u16;
+            let mut version_optional_0 = 0u16;
             let mut vdso_inst = Self {
                 clock_getres: ::core::ptr::null(),
                 clock_gettime: ::core::ptr::null(),
-                clock_gettime64: ::core::ptr::null(),
                 datapage_offset: ::core::ptr::null(),
                 get_syscall_map: ::core::ptr::null(),
                 get_tbfreq: ::core::ptr::null(),
@@ -31,6 +30,7 @@ impl Vdso {
                 sigtramp32: ::core::ptr::null(),
                 sync_dicache: ::core::ptr::null(),
                 sync_dicache_p5: ::core::ptr::null(),
+                clock_gettime64: ::core::ptr::null(),
             };
             {
                 let mut mandatory_count = 0usize;
@@ -54,21 +54,16 @@ impl Vdso {
                                 version.name(),
                                 [76, 73, 78, 85, 88, 95, 53, 46, 49, 49, 0u8][..].as_ptr(),
                             ) {
-                                if version_mandatory_1 == 0 {
-                                    mandatory_count += 1;
-                                    version_mandatory_1 = version.id();
-                                } else {
+                                if version_optional_0 != 0 {
                                     return ::core::option::Option::None;
                                 }
+                                version_optional_0 = version.id();
                             }
                         }
                         _ => (),
                     }
-                    if mandatory_count == 2 {
-                        break;
-                    }
                 }
-                if mandatory_count != 2 {
+                if mandatory_count != 1 {
                     return ::core::option::Option::None;
                 }
             }
@@ -228,14 +223,12 @@ impl Vdso {
                                     107, 95, 103, 101, 116, 116, 105, 109, 101, 54, 52, 0u8,
                                 ][..]
                                     .as_ptr(),
-                            ) && Some(version_mandatory_1) == symbol.version_id()
+                            ) && Some(version_optional_0) == symbol.version_id()
                             {
-                                if vdso_inst.clock_gettime64.is_null() {
-                                    mandatory_count += 1;
-                                    vdso_inst.clock_gettime64 = symbol.ptr();
-                                } else {
+                                if !vdso_inst.clock_gettime64.is_null() {
                                     return ::core::option::Option::None;
                                 }
+                                vdso_inst.clock_gettime64 = symbol.ptr();
                             }
                         }
                         228462901 => {
@@ -276,11 +269,8 @@ impl Vdso {
                         }
                         _ => (),
                     }
-                    if mandatory_count == 11 {
-                        break;
-                    }
                 }
-                if mandatory_count != 11 {
+                if mandatory_count != 10 {
                     return ::core::option::Option::None;
                 }
             }

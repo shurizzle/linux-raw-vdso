@@ -676,13 +676,12 @@ mod tests {
         let vdso = vdso.unwrap();
         assert!(!vdso.clock_getres.is_null());
         assert!(!vdso.clock_gettime.is_null());
-        assert!(!vdso.clock_gettime64.is_null());
         assert!(!vdso.datapage_offset.is_null());
         assert!(!vdso.get_syscall_map.is_null());
         assert!(!vdso.get_tbfreq.is_null());
         assert!(!vdso.getcpu.is_null());
         assert!(!vdso.gettimeofday.is_null());
-        assert!(!vdso.sigtramp_rt32.is_null());
+        assert!(!vdso.sigtramp_rt64.is_null());
         assert!(!vdso.sigtramp32.is_null());
         assert!(!vdso.sync_dicache.is_null());
         assert!(!vdso.sync_dicache_p5.is_null());
