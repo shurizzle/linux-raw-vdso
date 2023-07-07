@@ -11,6 +11,12 @@ pub struct Vdso {
     pub gettimeofday: *const ::core::ffi::c_void,
     #[doc = " exported since Linux 3.15"]
     pub time: *const ::core::ffi::c_void,
+    #[doc = " exported since Linux ?"]
+    pub clock_getres: *const ::core::ffi::c_void,
+    #[doc = " exported since Linux ?"]
+    pub clock_gettime64: *const ::core::ffi::c_void,
+    #[doc = " exported since Linux ?"]
+    pub getcpu: *const ::core::ffi::c_void,
 }
 impl Vdso {
     fn from_reader(reader: crate::VdsoReader) -> ::core::option::Option<Self> {
@@ -24,6 +30,9 @@ impl Vdso {
                 clock_gettime: ::core::ptr::null(),
                 gettimeofday: ::core::ptr::null(),
                 time: ::core::ptr::null(),
+                clock_getres: ::core::ptr::null(),
+                clock_gettime64: ::core::ptr::null(),
+                getcpu: ::core::ptr::null(),
             };
             {
                 let mut mandatory_count = 0usize;
@@ -64,6 +73,22 @@ impl Vdso {
                 let mut mandatory_count = 0usize;
                 for symbol in reader.symbols() {
                     match crate::util::elf_hash(symbol.name()) {
+                        11538501 => {
+                            if crate::util::streq(
+                                symbol.name(),
+                                [
+                                    95, 95, 118, 100, 115, 111, 95, 103, 101, 116, 99, 112, 117,
+                                    0u8,
+                                ][..]
+                                    .as_ptr(),
+                            ) && Some(version_optional_0) == symbol.version_id()
+                            {
+                                if !vdso_inst.getcpu.is_null() {
+                                    return ::core::option::Option::None;
+                                }
+                                vdso_inst.getcpu = symbol.ptr();
+                            }
+                        }
                         51759705 => {
                             if crate::util::streq(
                                 symbol.name(),
@@ -96,6 +121,38 @@ impl Vdso {
                                 } else {
                                     return ::core::option::Option::None;
                                 }
+                            }
+                        }
+                        80960643 => {
+                            if crate::util::streq(
+                                symbol.name(),
+                                [
+                                    95, 95, 118, 100, 115, 111, 95, 99, 108, 111, 99, 107, 95, 103,
+                                    101, 116, 114, 101, 115, 0u8,
+                                ][..]
+                                    .as_ptr(),
+                            ) && Some(version_optional_0) == symbol.version_id()
+                            {
+                                if !vdso_inst.clock_getres.is_null() {
+                                    return ::core::option::Option::None;
+                                }
+                                vdso_inst.clock_getres = symbol.ptr();
+                            }
+                        }
+                        99382692 => {
+                            if crate::util::streq(
+                                symbol.name(),
+                                [
+                                    95, 95, 118, 100, 115, 111, 95, 99, 108, 111, 99, 107, 95, 103,
+                                    101, 116, 116, 105, 109, 101, 54, 52, 0u8,
+                                ][..]
+                                    .as_ptr(),
+                            ) && Some(version_optional_0) == symbol.version_id()
+                            {
+                                if !vdso_inst.clock_gettime64.is_null() {
+                                    return ::core::option::Option::None;
+                                }
+                                vdso_inst.clock_gettime64 = symbol.ptr();
                             }
                         }
                         165542654 => {

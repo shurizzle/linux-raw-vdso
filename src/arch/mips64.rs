@@ -1,5 +1,5 @@
 #![allow(clippy::single_match)]
-#[doc = " vDSO for `mips` (both 32 and 64)"]
+#[doc = " vDSO for `mips64`"]
 #[derive(Debug, Copy, Clone)]
 pub struct Vdso {
     #[doc = " exported since Linux 4.4"]
@@ -8,8 +8,6 @@ pub struct Vdso {
     pub clock_gettime: *const ::core::ffi::c_void,
     #[doc = " exported since Linux ?"]
     pub clock_getres: *const ::core::ffi::c_void,
-    #[doc = " exported since Linux ?"]
-    pub clock_gettime64: *const ::core::ffi::c_void,
 }
 impl Vdso {
     fn from_reader(reader: crate::VdsoReader) -> ::core::option::Option<Self> {
@@ -19,7 +17,6 @@ impl Vdso {
                 gettimeofday: ::core::ptr::null(),
                 clock_gettime: ::core::ptr::null(),
                 clock_getres: ::core::ptr::null(),
-                clock_gettime64: ::core::ptr::null(),
             };
             {
                 for version in reader.versions() {
@@ -88,22 +85,6 @@ impl Vdso {
                                     return ::core::option::Option::None;
                                 }
                                 vdso_inst.clock_gettime = symbol.ptr();
-                            }
-                        }
-                        215425940 => {
-                            if crate::util::streq(
-                                symbol.name(),
-                                [
-                                    95, 95, 107, 101, 114, 110, 101, 108, 95, 99, 108, 111, 99,
-                                    107, 95, 103, 101, 116, 116, 105, 109, 101, 54, 52, 0u8,
-                                ][..]
-                                    .as_ptr(),
-                            ) && Some(version_optional_0) == symbol.version_id()
-                            {
-                                if !vdso_inst.clock_gettime64.is_null() {
-                                    return ::core::option::Option::None;
-                                }
-                                vdso_inst.clock_gettime64 = symbol.ptr();
                             }
                         }
                         _ => (),

@@ -28,12 +28,13 @@
 #[cfg_attr(
     all(
         target_os = "linux",
-        any(
-            all(target_arch = "mips", target_pointer_width = "32"),
-            target_arch = "mips64"
-        )
+        any(all(target_arch = "mips", target_pointer_width = "32"),)
     ),
     path = "arch/mips.rs"
+)]
+#[cfg_attr(
+    all(target_os = "linux", target_arch = "mips64"),
+    path = "arch/mips64.rs"
 )]
 #[cfg_attr(
     all(
