@@ -6,14 +6,18 @@
 
 #[cfg_attr(
     all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "aarch64",
         target_pointer_width = "64"
     ),
     path = "arch/aarch64.rs"
 )]
 #[cfg_attr(
-    all(target_os = "linux", target_arch = "arm", target_pointer_width = "32"),
+    all(
+        any(target_os = "linux", target_os = "android"),
+        target_arch = "arm",
+        target_pointer_width = "32"
+    ),
     path = "arch/arm.rs"
 )]
 #[cfg_attr(
@@ -86,7 +90,7 @@
 )]
 #[cfg_attr(
     all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "x86",
         target_endian = "little",
         target_pointer_width = "32"
@@ -95,7 +99,7 @@
 )]
 #[cfg_attr(
     all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "x86_64",
         target_endian = "little",
         target_pointer_width = "64"
@@ -431,106 +435,110 @@ mod tests {
     extern crate std;
 
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "x86_64",
         target_endian = "little",
         target_pointer_width = "64"
     ))]
     const FAKE: &str = "fake/x86_64.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "x86_64",
         target_endian = "little",
         target_pointer_width = "32"
     ))]
     const FAKE: &str = "fake/x32.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "x86",
         target_endian = "little",
         target_pointer_width = "32"
     ))]
     const FAKE: &str = "fake/x86.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "aarch64",
         target_pointer_width = "64"
     ))]
     const FAKE: &str = "fake/aarch64.so";
-    #[cfg(all(target_os = "linux", target_arch = "arm", target_pointer_width = "32"))]
+    #[cfg(all(
+        any(target_os = "linux", target_os = "android"),
+        target_arch = "arm",
+        target_pointer_width = "32"
+    ))]
     const FAKE: &str = "fake/arm.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "loongarch64",
         target_endian = "little",
         target_pointer_width = "64"
     ))]
     const FAKE: &str = "fake/loongarch64.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "mips",
         target_endian = "big",
         target_pointer_width = "32"
     ))]
     const FAKE: &str = "fake/mips.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "mips",
         target_endian = "little",
         target_pointer_width = "32"
     ))]
     const FAKE: &str = "fake/mipsel.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "mips64",
         target_endian = "big",
         target_pointer_width = "64"
     ))]
     const FAKE: &str = "fake/mips64.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "mips64",
         target_endian = "little",
         target_pointer_width = "64"
     ))]
     const FAKE: &str = "fake/mips64el.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "powerpc",
         target_endian = "big",
         target_pointer_width = "32"
     ))]
     const FAKE: &str = "fake/powerpc.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "powerpc64",
         target_endian = "big",
         target_pointer_width = "64"
     ))]
     const FAKE: &str = "fake/powerpc64.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "powerpc64",
         target_endian = "little",
         target_pointer_width = "64"
     ))]
     const FAKE: &str = "fake/powerpc64le.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "riscv32",
         target_endian = "little",
         target_pointer_width = "32"
     ))]
     const FAKE: &str = "fake/riscv32.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "riscv64",
         target_endian = "little",
         target_pointer_width = "64"
     ))]
     const FAKE: &str = "fake/riscv64.so";
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "s390x",
         target_endian = "big",
         target_pointer_width = "64"
@@ -538,7 +546,7 @@ mod tests {
     const FAKE: &str = "fake/s390x.so";
 
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "x86_64",
         target_endian = "little",
         any(target_pointer_width = "64", target_pointer_width = "32")
@@ -556,7 +564,7 @@ mod tests {
     }
 
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "x86",
         target_endian = "little",
         target_pointer_width = "32"
@@ -576,7 +584,7 @@ mod tests {
     }
 
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "aarch64",
         target_pointer_width = "64"
     ))]
@@ -592,7 +600,11 @@ mod tests {
         assert!(!vdso.clock_getres.is_null());
     }
 
-    #[cfg(all(target_os = "linux", target_arch = "arm", target_pointer_width = "32"))]
+    #[cfg(all(
+        any(target_os = "linux", target_os = "android"),
+        target_arch = "arm",
+        target_pointer_width = "32"
+    ))]
     #[test]
     fn parse() {
         let data = std::fs::read(FAKE).unwrap();
@@ -604,7 +616,7 @@ mod tests {
     }
 
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "loongarch64",
         target_endian = "little",
         target_pointer_width = "64"
@@ -623,7 +635,7 @@ mod tests {
     }
 
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         any(
             all(target_arch = "mips", target_pointer_width = "32"),
             target_arch = "mips64"
@@ -640,7 +652,7 @@ mod tests {
     }
 
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "powerpc",
         target_endian = "big",
         target_pointer_width = "32"
@@ -665,7 +677,7 @@ mod tests {
     }
 
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "powerpc64",
         target_pointer_width = "64"
     ))]
@@ -689,7 +701,7 @@ mod tests {
     }
 
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "riscv64",
         target_endian = "little",
         target_pointer_width = "64"
@@ -709,7 +721,7 @@ mod tests {
     }
 
     #[cfg(all(
-        target_os = "linux",
+        any(target_os = "linux", target_os = "android"),
         target_arch = "s390x",
         target_endian = "big",
         target_pointer_width = "64"
