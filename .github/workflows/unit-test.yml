@@ -5,197 +5,25 @@ on:
     branches:
       - master
   pull_request:
+    branches:
+      - master
   workflow_dispatch:
 
 jobs:
-  rustfmt:
-    name: rustfmt
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Install stable toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        components: rustfmt, clippy
-    - run: cargo fmt --all -- --check
-  check:
-    name: Check
-    permissions: write-all
-    needs: rustfmt
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Install stable toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        default: true
-        components: rustfmt, clippy
-    - name: Install nightly toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        default: false
-        components: rustfmt, clippy, rust-src
-    - name: Install targets
-      run: |
-        rustup target add \
-          aarch64-unknown-linux-gnu \
-          arm-unknown-linux-gnueabi \
-          mips-unknown-linux-gnu \
-          mipsel-unknown-linux-gnu \
-          mips64-unknown-linux-gnuabi64 \
-          mips64el-unknown-linux-gnuabi64 \
-          powerpc-unknown-linux-gnu \
-          powerpc64-unknown-linux-gnu \
-          powerpc64le-unknown-linux-gnu \
-          riscv64gc-unknown-linux-gnu \
-          s390x-unknown-linux-gnu \
-          i686-unknown-linux-gnu \
-          x86_64-unknown-linux-gnux32 \
-          x86_64-unknown-linux-gnu
-        rustup target add \
-          loongarch64-unknown-linux-gnu \
-          --toolchain nightly
-    - name: Clippy aarch64-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target aarch64-unknown-linux-gnu --all-features
-    - name: Clippy arm-unknown-linux-gnueabi
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target arm-unknown-linux-gnueabi --all-features
-    - name: Clippy mips-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target mips-unknown-linux-gnu --all-features
-    - name: Clippy mipsel-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target mipsel-unknown-linux-gnu --all-features
-    - name: Clippy mips64-unknown-linux-gnuabi64
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target mips64-unknown-linux-gnuabi64 --all-features
-    - name: Clippy mips64el-unknown-linux-gnuabi64
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target mips64el-unknown-linux-gnuabi64 --all-features
-    - name: Clippy powerpc-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target powerpc-unknown-linux-gnu --all-features
-    - name: Clippy powerpc64-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target powerpc64-unknown-linux-gnu --all-features
-    - name: Clippy powerpc64le-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target powerpc64le-unknown-linux-gnu --all-features
-    - name: Clippy riscv64gc-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target riscv64gc-unknown-linux-gnu --all-features
-    - name: Clippy s390x-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target s390x-unknown-linux-gnu --all-features
-    - name: Clippy i686-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target i686-unknown-linux-gnu --all-features
-    - name: Clippy x86_64-unknown-linux-gnux32
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target x86_64-unknown-linux-gnux32 --all-features
-    - name: Clippy x86_64-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --release -vv --target x86_64-unknown-linux-gnu --all-features
-    - name: Clippy loongarch64-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        toolchain: nightly
-        args: --release -vv --target loongarch64-unknown-linux-gnu --all-features
-    - name: Clippy riscv32gc-unknown-linux-gnu
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        toolchain: nightly
-        args: -Z build-std --release -vv --target riscv32gc-unknown-linux-gnu --all-features
-    - name: Clippy armeb-unknown-linux-gnueabi
-      uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        toolchain: nightly
-        args: -Z build-std --release -vv --target armeb-unknown-linux-gnueabi --all-features
   test:
     name: Test
     environment: master
-    needs: [rustfmt, check]
+    permissions: write-all
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [arm, loongarch64, x86_64, x86, aarch64, riscv64, powerpc, powerpc64, mips, mips64, s390x]
     steps:
     - uses: actions/checkout@v3
-    - name: Install 1.38.0 toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: 1.38.0
-        default: true
-    - name: Install 1.42.0 toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: 1.42.0
-        default: true
-    - name: Install nightly toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        default: false
-        components: rust-src
-    - name: Install toolchains
-      run: env ENVFILE="$GITHUB_ENV" ./scripts/install.sh
-    - name: Test aarch64-unknown-linux-gnu
-      run: cargo test --verbose --target aarch64-unknown-linux-gnu --release
-    - name: Test arm-unknown-linux-gnueabi
-      run: cargo test --verbose --target arm-unknown-linux-gnueabi --release
-    - name: Test mips-unknown-linux-gnu
-      run: cargo test --verbose --target mips-unknown-linux-gnu --release
-    - name: Test mipsel-unknown-linux-gnu
-      run: cargo test --verbose --target mipsel-unknown-linux-gnu --release
-    - name: Test mips64-unknown-linux-gnuabi64
-      run: cargo test --verbose --target mips64-unknown-linux-gnuabi64 --release
-    - name: Test mips64el-unknown-linux-gnuabi64
-      run: cargo test --verbose --target mips64el-unknown-linux-gnuabi64 --release
-    - name: Test powerpc-unknown-linux-gnu
-      run: cargo test --verbose --target powerpc-unknown-linux-gnu --release
-    - name: Test powerpc64-unknown-linux-gnu
-      run: cargo test --verbose --target powerpc64-unknown-linux-gnu --release
-    - name: Test powerpc64le-unknown-linux-gnu
-      run: cargo test --verbose --target powerpc64le-unknown-linux-gnu --release
-    - name: Test riscv64gc-unknown-linux-gnu
-      run: cargo +1.42.0 test --verbose --target riscv64gc-unknown-linux-gnu --release
-    - name: Test s390x-unknown-linux-gnu
-      run: cargo test --verbose --target s390x-unknown-linux-gnu --release
-    - name: Test i686-unknown-linux-gnu
-      run: cargo test --verbose --target i686-unknown-linux-gnu --release
-    - name: Test x86_64-unknown-linux-gnu
-      run: cargo test --verbose --target x86_64-unknown-linux-gnu --release
-    - name: Test loongarch64-unknown-linux-gnu
-      run: cargo +nightly test --verbose --target loongarch64-unknown-linux-gnu --release
+    - name: Install toolchain
+      run: |
+        ./scripts/install-rust.sh ${{ matrix.arch }}
+        ./scripts/install-targets.sh ${{ matrix.arch }}
+        docker pull shurizzle/toolchain-gnu-musl-cargoenv-${{ matrix.arch }}:latest
+    - name: Check and test
+      run: ./scripts/test.sh ${{ matrix.arch }}
